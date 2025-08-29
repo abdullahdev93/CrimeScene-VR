@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 001840bc4e4604d0c9cf9d9a7deaa7e0, type: 3}
+  m_Name: Jake_Malone
+  m_EditorClassIdentifier: 
+  suspectId: SUSPECT_JAKE
+  fullName: JAKE MALONE
+  facts: 
+  alibi: 
+  photo: {fileID: -1686931583, guid: 9f6cbc77cb0424e0a9bcadc6dde66c94, type: 3}
