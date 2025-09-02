@@ -1,3 +1,4 @@
+using TMPro;
 using UnityEngine;
 
 public class InputsController : MonoBehaviour
@@ -10,6 +11,7 @@ public class InputsController : MonoBehaviour
 
     public int evidenceCollected = 0;
 
+    //public TextMeshProUGUI logger;
     private void Awake()
     {
         Instance = this;

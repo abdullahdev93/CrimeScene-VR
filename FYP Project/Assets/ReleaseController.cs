@@ -164,9 +164,18 @@ public class ReleaseController : OVRGrabbable
     }
 
     // ---------- YOUR CUSTOM CODE (kept exactly like you had) ----------
-
+    public enum Handenum { Left, Right }
+    [Header("Which hand triggers this pulse?")]
+    public Handenum handd = Handenum.Right;
     private void OnGrab(Handedness hand)
     {
+        //if (MetaHaptics.Instance == null) return;
+        //var controller = (handd == Handenum.Left) ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
+        //MetaHaptics.Instance.Pulse(controller);
+
+        if (OculusInput.GetRightGrip() > 0.8f) { var controllerr = OVRInput.Controller.RTouch; MetaHaptics.Instance.Pulse(controllerr); }
+        else if (OculusInput.GetLeftGrip() > 0.8f) { var controllerrr = OVRInput.Controller.RTouch; MetaHaptics.Instance.Pulse(controllerrr); }
+        SoundsManager.Instance.PlayPickSound();
         if (hand == Handedness.Left)
         {
             if (logDebug) Debug.Log($"{name} grabbed by LEFT hand");
@@ -181,6 +190,13 @@ public class ReleaseController : OVRGrabbable
         {
             if (logDebug) Debug.Log($"{name} grabbed by UNKNOWN hand");
         }
+        if(!IntroductionController.instance.interactedWithFirstGrabbable)
+        {
+            IntroductionController.instance.ShowhideIntroCanvas(true);
+            IntroductionController.instance.interactedWithFirstGrabbable = true;
+            IntroductionController.instance.HighlightObject.SetActive(false);
+        }
+
     }
 
     private void OnRelease()

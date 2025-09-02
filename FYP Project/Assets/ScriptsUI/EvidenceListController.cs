@@ -16,6 +16,7 @@ public class EvidenceListController : MonoBehaviour
     public Toggle CoffeeCupToggle;
     public Toggle Glass1Toggle;
     public Toggle Glass2Toggle;
+    public Toggle DeadBodyToggle;
 
     public static EvidenceListController instance;
 
@@ -30,6 +31,7 @@ public class EvidenceListController : MonoBehaviour
 
     public void SetEvidenceCollected(string evidenceName)
     {
+        SoundsManager.Instance.PlayDropSound();
         switch (evidenceName) 
         {
            case HammerEvidence:
@@ -71,12 +73,15 @@ public class EvidenceListController : MonoBehaviour
             case GalssesEvidence2:
                 Glass2Toggle.isOn = true;
                 break;
+            case DeadBody:
+                DeadBodyToggle.isOn = true;
+                break;
         }
         EvidenceCollected++;
         if(EvidenceCollected == 13) 
         { 
             Message.gameObject.SetActive(true);
-            SuspectBoardUIHandler.instance.ShowSuspects(); 
+            SuspectBoardUIHandler.instance.ShowSuspects(true); 
             Debug.Log("All evidence collected, now pick the suspect"); 
         }
     }
@@ -94,5 +99,6 @@ public class EvidenceListController : MonoBehaviour
     public const string CoffeeCupEvidence = "CoffeeCup";
     public const string GalssesEvidence1 = "Glasses1";
     public const string GalssesEvidence2 = "Glasses2";
+    public const string DeadBody = "DeadBody";
 
 }

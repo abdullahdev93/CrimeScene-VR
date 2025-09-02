@@ -17,6 +17,14 @@ public class SuspectBoardUIHandler : MonoBehaviour
     public Button LanaConfirmBtn;
     public Button TheoConfirmBtn;
 
+    public Button Play1Btn;
+    public Button Play2Btn;
+    public Button Play3Btn;
+
+    public AudioSource Suspect1Sound;
+    public AudioSource Suspect2Sound;
+    public AudioSource Suspect3Sound;
+
     public TextMeshProUGUI SuccessFailMessageText;
 
     private void Awake()
@@ -26,15 +34,33 @@ public class SuspectBoardUIHandler : MonoBehaviour
 
     private void Start()
     {
-        HideSuspects();
+        //HideSuspects();
+        ShowSuspects(false);
         NextSuspectBtn.onClick.AddListener(delegate () 
         {
             ShowNextSuspect();
         });
 
+        JakeConfirmBtn.interactable = false;
+        LanaConfirmBtn.interactable = false;
+        TheoConfirmBtn.interactable = false;
+
         JakeConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(false); });
         LanaConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(true); });
         TheoConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(false); });
+
+        Play1Btn.onClick.AddListener(delegate () 
+        {
+            Suspect1Sound.Play();
+        });
+        Play2Btn.onClick.AddListener(delegate ()
+        {
+            Suspect2Sound.Play();
+        });
+        Play3Btn.onClick.AddListener(delegate ()
+        {
+            Suspect3Sound.Play();
+        });
     }
 
     private void ShowNextSuspect()
@@ -44,12 +70,15 @@ public class SuspectBoardUIHandler : MonoBehaviour
             SuspectsData[i].SetActive(false);
         }
         currentSuspectIndex++;
+        if (currentSuspectIndex == 1) { Suspect1Sound.Stop(); Suspect2Sound.Play(); }
+        if(currentSuspectIndex == 2) {  Suspect2Sound.Stop(); Suspect3Sound.Play();}
         if (currentSuspectIndex >= SuspectsData.Count) currentSuspectIndex = 0;
         SuspectsData[currentSuspectIndex].SetActive(true);
     }
 
     public void ShowSuccessFailMessage(bool status)
     {
+        if (InputsController.Instance.evidenceCollected < 13) return;
         for (int i = 0;i < SuspectsData.Count;i++)
         {
             SuspectsData[i].SetActive(false);
@@ -77,8 +106,14 @@ public class SuspectBoardUIHandler : MonoBehaviour
         SuccessFailMessageText.text = "Please complete evidence list to see all the suspects";
     }
 
-    public void ShowSuspects()
+    public void ShowSuspects(bool status)
     {
+        if(status)
+        {
+            JakeConfirmBtn.interactable = true;
+            LanaConfirmBtn.interactable = true;
+            TheoConfirmBtn.interactable = true;
+        }
         SuspectsData[currentSuspectIndex].SetActive(true);
         NextSuspectBtn.gameObject.SetActive(true);
         SuccessFailMessageText.gameObject.SetActive(false);
