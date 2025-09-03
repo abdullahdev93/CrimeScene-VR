@@ -5,7 +5,7 @@ public class ProximityLogger : MonoBehaviour
 {
     [Header("Who is the player? (HMD or rig root)")]
     public Transform player;
-    public GameObject RootPlayer;// If null, tries Camera.main, then "CenterEyeAnchor"
+    public GameObject RootPlayer; // If null, tries Camera.main, then "CenterEyeAnchor"
 
     [Header("Proximity Settings")]
     [Tooltip("Enter when distance <= this value")]
@@ -22,12 +22,23 @@ public class ProximityLogger : MonoBehaviour
     [Header("Debug")]
     public bool drawGizmos = true;
 
-    private bool _isNear = false;
+    public bool _isNear = false;
     private Renderer _renderer;
+
+    [Header("Zone Actions / UI")]
     public Transform SpawnPoint;
     public GameObject RestrictedZoneCanvas;
     public GameObject Stool;
     public TextMeshProUGUI RestrictedZoneInstructions;
+
+    [Header("Stool Follow Options")]
+    [Tooltip("If true, once the stool is placed it follows the player on XZ only while the player is inside the zone.")]
+    public bool followStoolInZone = true;
+
+    // Internals
+    public bool stoolPlaced;
+    public bool CollectFirstEvidenceSoundPlayed = false;
+    private float _stoolFixedY; // keep Y locked while following
 
     private void Awake()
     {
@@ -44,43 +55,85 @@ public class ProximityLogger : MonoBehaviour
             if (Camera.main != null) player = Camera.main.transform;
             if (player == null)
             {
-                // Fallback for OVRCameraRig hierarchy if MainCamera tag isn't set.
                 var centerEye = GameObject.Find("CenterEyeAnchor");
                 if (centerEye != null) player = centerEye.transform;
             }
-
             if (player == null)
                 Debug.LogWarning("[ProximityLogger] No player assigned and none auto-found. Please assign the HMD or rig root.");
         }
+
+        // Cache Y for stool if assigned
+        if (Stool != null)
+            _stoolFixedY = Stool.transform.position.y;
     }
-    public bool stoolPlaced;
+    public float dist;
+
     private void Update()
     {
-        //RootPlayer.transform.localPosition = new Vector3(-1f, 0.374f,  5.326f);
         if (player == null) return;
 
-        float dist = GetDistance(player.position);
+         dist = GetDistance(player.position);
 
-        if (!_isNear && dist <= enterRadius && !stoolPlaced)
+        // --- Zone enter/exit detection ---
+        if (!_isNear && dist <= enterRadius )
         {
             _isNear = true;
-            Debug.Log($"[Proximity] ENTER near '{name}'. Dist = {dist:F2} m");
-            RootPlayer.transform.position = SpawnPoint.position;
-            RootPlayer.transform.rotation = SpawnPoint.rotation;
-            RestrictedZoneCanvas.SetActive(true);
+            if(!stoolPlaced)
+            {
+                Debug.Log($"[Proximity] ENTER near '{name}'. Dist = {dist:F2} m");
+                if (RootPlayer != null && SpawnPoint != null)
+                {
+                    RootPlayer.transform.position = SpawnPoint.position;
+                    RootPlayer.transform.rotation = SpawnPoint.rotation;
+                }
+                if (RestrictedZoneCanvas != null) RestrictedZoneCanvas.SetActive(true);
+                if (SoundsManager.Instance != null)
+                {
+                    SoundsManager.Instance.PlayRoomEnttryDeniedSound();
+                    SoundsManager.Instance.PlayPressXtoMovein();
+                }
+            }
+          
         }
         else if (_isNear && dist >= exitRadius)
         {
             _isNear = false;
             Debug.Log($"[Proximity] EXIT near '{name}'. Dist = {dist:F2} m");
         }
-        if(OculusInput.GetButtonDownX() && !stoolPlaced)
+        else if (_isNear && dist <= enterRadius && !CollectFirstEvidenceSoundPlayed)
         {
-            Stool.SetActive(true);
-            RestrictedZoneInstructions.text = "Great!, now you can visit this area";
-            stoolPlaced = true;
-            RestrictedZoneCanvas.SetActive(false);
+            if (SoundsManager.Instance != null)
+                SoundsManager.Instance.PlayCollectFirstEvidence();
+            CollectFirstEvidenceSoundPlayed = true;
+            _isNear = true;
+            
         }
+
+        // --- Place stool with X button ---
+        if (OculusInput.GetButtonDownX() && !stoolPlaced)
+        {
+            if (Stool != null) Stool.SetActive(true);
+            if (RestrictedZoneInstructions != null)
+                RestrictedZoneInstructions.text = "Great!, now you can visit this area";
+
+            stoolPlaced = true;
+            if (RestrictedZoneCanvas != null) RestrictedZoneCanvas.SetActive(false);
+            if (SoundsManager.Instance != null)
+                SoundsManager.Instance.PlayMoveIntoRoom();
+
+            // Lock the stool's Y at the moment it's placed
+            if (Stool != null)
+                _stoolFixedY = Stool.transform.position.y;
+        }
+
+        // --- Follow behavior: only when inside the zone and stool has been placed ---
+        if (followStoolInZone && stoolPlaced && _isNear && Stool != null)
+        {
+            Vector3 p = player.position;
+            float y = _stoolFixedY; // keep Y fixed
+            Stool.transform.position = new Vector3(p.x, y, p.z);
+        }
+        // When _isNear becomes false (exit), stool stops updating and stays where it is.
     }
 
     private float GetDistance(Vector3 playerPos)
@@ -91,13 +144,9 @@ public class ProximityLogger : MonoBehaviour
 
         if (useRendererBounds && _renderer != null)
         {
-            // Closest point on the cube's bounds
             var b = _renderer.bounds;
             if (ignoreY)
             {
-                // Project bounds center to ground for more stable Y-agnostic distance
-                var c = b.center; c.y = 0f;
-                // Approximate by clamping XZ only
                 var p = playerPos;
                 var min = b.min; var max = b.max;
                 min.y = 0f; max.y = 0f;
@@ -123,19 +172,15 @@ public class ProximityLogger : MonoBehaviour
     {
         if (!drawGizmos) return;
 
-        // Where we draw from (center)
         Vector3 center = transform.position;
         if (ignoreY) center.y = 0f;
 
-        // Enter radius
         Gizmos.color = new Color(0f, 1f, 0f, 0.35f);
         Gizmos.DrawWireSphere(center, enterRadius);
 
-        // Exit radius
         Gizmos.color = new Color(1f, 0f, 0f, 0.35f);
         Gizmos.DrawWireSphere(center, exitRadius);
 
-        // Approximate bounds (for visualization only)
         var r = GetComponent<Renderer>();
         if (r != null)
         {

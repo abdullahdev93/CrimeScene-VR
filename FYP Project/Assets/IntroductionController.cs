@@ -32,6 +32,7 @@ public class IntroductionController : MonoBehaviour
     IEnumerator DelayForRigidbody()
     {
         yield return new WaitForSeconds(2f);
+        SoundsManager.Instance.PlayIntroSource();
         SetAllGrabbablesTrueFalse(false);
 
     }

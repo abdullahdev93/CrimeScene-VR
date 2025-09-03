@@ -21,7 +21,7 @@ public class EvidenceListController : MonoBehaviour
     public static EvidenceListController instance;
 
     public int EvidenceCollected = 0;
-
+    public GameObject BoardZone;
     public TextMeshProUGUI Message;
 
     private void Awake()
@@ -65,6 +65,7 @@ public class EvidenceListController : MonoBehaviour
            ClothPieceToggle.isOn = true;
            break;
            case CoffeeCupEvidence:
+                SoundsManager.Instance.PlayCollectFirstEvidenceCompleted();
            CoffeeCupToggle.isOn = true;
            break;
            case GalssesEvidence1:
@@ -78,11 +79,13 @@ public class EvidenceListController : MonoBehaviour
                 break;
         }
         EvidenceCollected++;
-        if(EvidenceCollected == 13) 
+        if(EvidenceCollected == 14) 
         { 
             Message.gameObject.SetActive(true);
             SuspectBoardUIHandler.instance.ShowSuspects(true); 
             Debug.Log("All evidence collected, now pick the suspect"); 
+            SoundsManager.Instance.PlayAllEvidenceCompleted();
+            BoardZone.SetActive(true);
         }
     }
 

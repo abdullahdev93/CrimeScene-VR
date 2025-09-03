@@ -64,6 +64,7 @@ public class RayController : MonoBehaviour
         if (img != null) img.color = Color.grey;
 
         buttonInRay.onClick.Invoke();
+        SoundsManager.Instance.PlayUIClickSound();
         lastClickTime = Time.time;
     }
     private void Update()

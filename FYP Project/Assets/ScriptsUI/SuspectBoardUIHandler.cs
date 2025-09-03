@@ -25,6 +25,9 @@ public class SuspectBoardUIHandler : MonoBehaviour
     public AudioSource Suspect2Sound;
     public AudioSource Suspect3Sound;
 
+    public GameObject Confetti;
+    public GameObject OriginalSun;
+    public GameObject RedSun;
     public TextMeshProUGUI SuccessFailMessageText;
 
     private void Awake()
@@ -45,8 +48,8 @@ public class SuspectBoardUIHandler : MonoBehaviour
         LanaConfirmBtn.interactable = false;
         TheoConfirmBtn.interactable = false;
 
-        JakeConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(false); });
-        LanaConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(true); });
+        JakeConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(true); });
+        LanaConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(false); });
         TheoConfirmBtn.onClick.AddListener(delegate () { ShowSuccessFailMessage(false); });
 
         Play1Btn.onClick.AddListener(delegate () 
@@ -69,16 +72,20 @@ public class SuspectBoardUIHandler : MonoBehaviour
         {
             SuspectsData[i].SetActive(false);
         }
+        SoundsManager.Instance.StopAllSources();
         currentSuspectIndex++;
         if (currentSuspectIndex == 1) { Suspect1Sound.Stop(); Suspect2Sound.Play(); }
         if(currentSuspectIndex == 2) {  Suspect2Sound.Stop(); Suspect3Sound.Play();}
         if (currentSuspectIndex >= SuspectsData.Count) currentSuspectIndex = 0;
+        if (currentSuspectIndex == 0) { Suspect3Sound.Stop(); Suspect1Sound.Play(); }
+
         SuspectsData[currentSuspectIndex].SetActive(true);
     }
 
     public void ShowSuccessFailMessage(bool status)
     {
-        if (InputsController.Instance.evidenceCollected < 13) return;
+        if (InputsController.Instance.evidenceCollected < 14) return;
+        StopAllSuspectSources();
         for (int i = 0;i < SuspectsData.Count;i++)
         {
             SuspectsData[i].SetActive(false);
@@ -87,10 +94,15 @@ public class SuspectBoardUIHandler : MonoBehaviour
         SuccessFailMessageText.gameObject.SetActive(true);
         if(status)
         {
+            SoundsManager.Instance.PlayCorrectProfileSelected();
+            Confetti.SetActive(true);
             SuccessFailMessageText.text = "Congratulations, you have successfully caught the murderer";
         }
         else
         {
+            SoundsManager.Instance.PlayWornProfileSelected();
+            OriginalSun.SetActive(false);
+            RedSun.SetActive(true);
             SuccessFailMessageText.text = "You have picked the wrong person";
         }
     }
@@ -117,6 +129,13 @@ public class SuspectBoardUIHandler : MonoBehaviour
         SuspectsData[currentSuspectIndex].SetActive(true);
         NextSuspectBtn.gameObject.SetActive(true);
         SuccessFailMessageText.gameObject.SetActive(false);
+    }
+
+    public void StopAllSuspectSources()
+    {
+        Suspect1Sound.Stop();
+        Suspect2Sound.Stop();
+        Suspect3Sound.Stop();
     }
 
 }
