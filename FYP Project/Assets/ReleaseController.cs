@@ -173,8 +173,8 @@ public class ReleaseController : OVRGrabbable
         //var controller = (handd == Handenum.Left) ? OVRInput.Controller.LTouch : OVRInput.Controller.RTouch;
         //MetaHaptics.Instance.Pulse(controller);
 
-        if (OculusInput.GetRightGrip() > 0.8f) { var controllerr = OVRInput.Controller.RTouch; MetaHaptics.Instance.Pulse(controllerr); }
-        else if (OculusInput.GetLeftGrip() > 0.8f) { var controllerrr = OVRInput.Controller.RTouch; MetaHaptics.Instance.Pulse(controllerrr); }
+        /*if (OculusInput.GetRightGrip() > 0.1f) {*/ var controllerr = OVRInput.Controller.RTouch; MetaHaptics.Instance.Pulse(controllerr); /*}*/
+        //else if (OculusInput.GetLeftGrip() > 0.1f) { var controllerrr = OVRInput.Controller.RTouch; MetaHaptics.Instance.Pulse(controllerrr); }
         SoundsManager.Instance.PlayPickSound();
         if (hand == Handedness.Left)
         {

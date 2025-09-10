@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
 public class SuspectBoardUIHandler : MonoBehaviour
@@ -10,6 +11,7 @@ public class SuspectBoardUIHandler : MonoBehaviour
     public List<GameObject> SuspectsData;
 
     public Button NextSuspectBtn;
+    public Button RestartBtn;
 
     int currentSuspectIndex = 0;
 
@@ -64,6 +66,11 @@ public class SuspectBoardUIHandler : MonoBehaviour
         {
             Suspect3Sound.Play();
         });
+
+        RestartBtn.onClick.AddListener(delegate ()
+        {
+            SceneManager.LoadScene(0);
+        });
     }
 
     private void ShowNextSuspect()
@@ -96,6 +103,7 @@ public class SuspectBoardUIHandler : MonoBehaviour
         {
             SoundsManager.Instance.PlayCorrectProfileSelected();
             Confetti.SetActive(true);
+            RestartBtn.gameObject.SetActive(true);
             SuccessFailMessageText.text = "Congratulations, you have successfully caught the murderer";
         }
         else
@@ -103,6 +111,7 @@ public class SuspectBoardUIHandler : MonoBehaviour
             SoundsManager.Instance.PlayWornProfileSelected();
             OriginalSun.SetActive(false);
             RedSun.SetActive(true);
+            RestartBtn.gameObject.SetActive(true) ;
             SuccessFailMessageText.text = "You have picked the wrong person";
         }
     }

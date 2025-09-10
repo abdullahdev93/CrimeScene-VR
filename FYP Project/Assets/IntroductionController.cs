@@ -62,7 +62,7 @@ public class IntroductionController : MonoBehaviour
             else Debug.LogWarning($"[Grabbables] {go.name} is missing GrabInteractable component");
 
             var distanceGrab = go.GetComponent<DistanceGrabInteractable>();
-            if (distanceGrab != null) distanceGrab.enabled = status;
+            if (distanceGrab != null) distanceGrab.enabled = false;
             else Debug.LogWarning($"[Grabbables] {go.name} is missing DistanceGrabInteractable component");
 
             var boxCol = go.GetComponent<BoxCollider>();
